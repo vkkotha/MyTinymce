@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<!-- Required meta tags -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="data:image/x-icon;" rel="shortcut icon" />
+
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<title>Tiny MCE</title>
+<style>
+  .page-controls {
+    background-color: rgb(244, 245, 246);
+    padding: 1rem 0 0 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .preview-container {
+    background-color: rgb(244, 245, 246);
+    overflow: hidden;
+    display: grid;
+    justify-content: center;
+    grid-template-rows: min-content;
+    border: 1px solid aliceblue;
+    height: calc(100vh);
+  }
+  #module-scroll {
+    overflow-y: auto;
+    /* width: 100%; */
+    z-index: 110;
+    /* max-width: 90vh; */
+    /* min-height: 80%; */
+    padding-top: 10px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-bottom: 10px;
+    /* margin-bottom: 40px;
+    margin-right: 16px; */
+    height: calc(80vh);
+    background-color: #fff;
+  }
+  .module-container {
+    width: 640px;
+    margin: auto;
+  }
+
+  .module-container table td {
+    border-collapse: collapse;
+  }
+
+  .module-container:hover {
+    box-shadow: 0 0 0 3px #000;
+    backface-visibility: hidden;
+    z-index: 105;
+  }
+
+  .tinymce-toolbar-container {
+    z-index: 2;
+    background-color: rgb(244, 245, 246);
+    height: 50px;
+  }
+  #tinymce-toolbar {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: inline-block;
+  }
+
+  .tiny-editor-container {
+    position: relative;
+  }
+</style>
+
+<script>
+  function openTiny(e) {
+    const el = e.currentTarget;
+    if (el) {
+      // let richTextElement = el.parentElement;
+      // if (richTextElement && richTextElement.hasAttribute('cbn-editable')) {
+      //   let type = richTextElement.getAttribute('richtext-mode');
+      //   let data = richTextElement.getAttribute('data-richtext');
+      //   let isSimple = type && type === 'simple';
+      //   let isCta = data && data.toLowerCase().indexOf('cta') > -1;
+      //   let config = getEditorConfig(isSimple || isCta);
+      //   showTiny(el, config);
+      // }
+
+      let currentChild = el.firstElementChild;
+      let editorElement = null;
+      if ( currentChild && currentChild.id && currentChild.hasAttribute('_tinyedit') ) {
+        editorElement = currentChild;
+      } else {
+        editorElement = document.createElement('div');
+        const editorId = create_UUID();
+        editorElement.setAttribute('id', editorId);
+        editorElement.setAttribute('_tinyedit', '');
+        editorElement.setAttribute('spellcheck', false);
+        let content = el.innerHTML;
+        el.innerHTML = '';
+        editorElement.innerHTML = content;
+        el.appendChild(editorElement);
+      }
+
+      let richTextElement = el.parentElement;
+      let type = richTextElement.getAttribute('richtext-mode');
+      let data = richTextElement.getAttribute('data-richtext');
+      let isSimple = type && type === 'simple';
+      let isCta = data && data.toLowerCase().indexOf('cta') > -1;
+      let config = getEditorConfig(isSimple || isCta);
+
+      showTiny(editorElement, config);
+    }
+  }
+
+  function closeTiny(el) {
+    if (el) {
+      tinymce.remove("#" + el.id);
+    }
+  }
+
+  function addFont() {
+    let font = $("#font").val().trim();
+    if(font) {
+      let fn = font + '=' + font + ';';
+      if (fallbackFonts.external_fonts.indexOf(font) === -1) {
+        window.fallbackFonts.external_fonts += fn;
+        tinymce.remove();
+      }
+    }
+  }
+
+  function create_UUID() {
+    var dt = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (dt + Math.random()*16)%16 | 0;
+        dt = Math.floor(dt/16);
+        return (c=='x' ? r :(r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+  
+  }
+
+  function addModule() {
+    let uuid = create_UUID();
+    $(`<div class="module-container" module_guid="m_` + uuid + `">
+        <div id="module4">
+          <table layout-row="true" role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff">
+                <tbody><tr layout-row="true">
+                  <td align="left" style="padding: 0px 20px 0px 20px;" class="pad20rl mobile_h1 match" data-groupid="h1">
+                      <h1 style="font-size: 14px; margin: 0px; font-weight: normal; font-family: Arial, Helvetica, sans-serif; letter-spacing: 0px; text-transform: none">
+                        <span id="mymodule1" style="color: #000000; font-size: 14px; line-height: 120%; font-family: Arial, Helvetica, sans-serif; mso-line-height-rule: exactly;" cbn-editable="richtext" data-richtext="h1_text">
+                          <!-- <div id="` + uuid + `" spellcheck="false" contenteditable="true" > -->
+                            <span style="font-size: 50px; line-height: 120%">H1 Text</span>
+                          <!-- </div> -->
+                        </span>
+                      </h1> 
+                  </td>
+                </tr>
+              </tbody>
+          </table>
+        </div>
+    </div>`).appendTo('#module-scroll');
+    // tinymce.execCommand('mceAddEditor', false, uuid);
+    // initTiny();
+    // initTiny(false);
+  }
+
+  function addCTA() {
+    let uuid = create_UUID();
+    $(`<div class="module-container" module_guid="m_` + uuid + `">
+        <div id="module4">
+          <table layout-row="true" role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff">
+                <tbody><tr layout-row="true">
+                  <td align="left" style="padding: 0px 20px 0px 20px;" class="pad20rl mobile_h1 match" data-groupid="h1">
+                      <h1 style="font-size: 14px; margin: 0px; font-weight: normal; font-family: Arial, Helvetica, sans-serif; letter-spacing: 0px; text-transform: none">
+                        <span id="mymodule1" style="color: #000000; font-size: 14px; line-height: 120%; font-family: Arial, Helvetica, sans-serif; mso-line-height-rule: exactly;" cbn-editable="richtext" data-richtext="h1_text" richtext-mode="simple">
+                          Right CTA
+                        </span>
+                      </h1> 
+                  </td>
+                </tr>
+              </tbody>
+          </table>
+        </div>
+    </div>`).appendTo('#module-scroll');
+    // tinymce.execCommand('mceAddEditor', false, uuid);
+    // initTiny();
+    // initTiny(false);
+  }
+</script>
+</head>
+  <body class="container-fluid" style="text-align: center;">
+
+    <div class="page-controls">
+      <div class="container">
+        <div class="row">
+          <button type="button" class="btn btn-primary col-2 ml-2" onclick="addModule()">Add Module</button>
+          <button type="button" class="btn btn-primary col-2 ml-1" onclick="addCTA()">Add CTA</button>
+          <input type="text" id="font" class="form-control col ml-5" placeholder="Add Font"></input>
+          <button type="button" class="btn btn-primary col-1 ml-1 mr-2" onclick="addFont()">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="tinymce-toolbar-container">
+      <div id="tinymce-toolbar"></div>
+    </div>
+    <div class="preview-container">
+      <div id="module-scroll">
+        <div class="module-container" module_guid="m_module1">
+          <div id="module1">
+            <table layout-row="true" role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff">
+              <tbody>
+                <tr layout-row="true">
+                  <td align="left" style="padding: 0px 20px 0px 20px;" class="pad20rl mobile_h1 match" data-groupid="h1">
+                    <h1 style="font-size: 14px; margin: 0px; font-weight: normal; font-family: Arial, Helvetica, sans-serif; letter-spacing: 0px; text-transform: none">
+                      <span id="mymodule1" style="color: #000000; font-size: 14px; line-height: 120%; font-family: Arial, Helvetica, sans-serif; mso-line-height-rule: exactly;" cbn-editable="richtext" data-richtext="h1_text">
+                        <div id="module1_container0" spellcheck="false" contenteditable="true" >
+                          <span style="font-size: 50px; line-height: 120%">H1 Text</span>
+                        </div>
+                      </span>
+                    </h1> 
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="module-container" module_guid="m_module2">
+          <div id="module2">
+            <table layout-row="true" role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff">
+                <tbody>
+                  <tr layout-row="true">
+                    <td align="left" style="padding: 0px 20px 0px 20px;" class="pad20rl mobile_h1 match" data-groupid="h1">
+                      <h1 style="font-size: 14px; margin: 0px; font-weight: normal; font-family: Arial, Helvetica, sans-serif; letter-spacing: 0px; text-transform: none">
+                        <span id="mymodule2" style="color: #000000; font-size: 14px; line-height: 120%; font-family: Arial, Helvetica, sans-serif; mso-line-height-rule: exactly;" cbn-editable="richtext" data-richtext="h1_text" richtext-mode="simple">
+                          <div id="module2_container0" spellcheck="false" contenteditable="true" >
+                            Left CTA
+                          </div>
+                        </span>
+                      </h1> 
+                    </td>
+                  </tr>
+                </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.3.0/lodash.min.js"></script>
+    <!--<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/4/tinymce.min.js" referrerpolicy="origin"></script>-->
+    <!-- <script src="./js/tinymce/tinymce.min.js"></script> -->
+    <script src="./tinymce/tinymce.min.js"></script>
+    <script src="./mytiny.js"></script>
+
+    <style>
+      .mce-edit-focus {
+        outline: 0px;
+      }
+    </style>
+    <script>
+      //  div:first-child
+      $("#module-scroll").on('click', '[cbn-editable]', function(e) {
+        openTiny(e);
+      });
+    </script>
+  </body>
+</html>
